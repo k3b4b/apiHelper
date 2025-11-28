@@ -68,6 +68,7 @@ class OrderType(Base):
     organization_id = Column(Integer, ForeignKey("organizations.id"), nullable=False)
     order_type_id = Column(String, nullable=False)
     name = Column(String)
+    order_service_type = Column(String, nullable=False)
 
     organization = relationship("Organization", back_populates="order_types")
 
@@ -78,6 +79,8 @@ class PaymentType(Base):
     organization_id = Column(Integer, ForeignKey("organizations.id"), nullable=False)
     payment_type_id = Column(String, nullable=False)
     name = Column(String)
+    payment_type_kind = Column(String, nullable=False)
+    code = Column(String, nullable=False)
 
     organization = relationship("Organization", back_populates="payment_types")
 

@@ -1,7 +1,10 @@
+from io import BytesIO
+import json
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from app.db import models
 from app.services.api_service import ApiService
-from app.services.db_service import check_token, read_terminals, update_terminals, update_token, update_organizations, update_payment_types, update_order_types, update_discount_types, read_exact_key, read_exact_organization, read_api_keys, read_organizations, read_payment_types, read_order_types, read_discount_types
+from app.services.db_service import check_token, create_api_key, read_terminals, update_terminals, update_token, update_organizations, update_payment_types, update_order_types, update_discount_types, read_exact_key, read_exact_organization, read_api_keys, read_organizations, read_payment_types, read_order_types, read_discount_types, check_exact_key
 api = ApiService()
 
 def get_token(db: Session, key_id: int) -> str:
@@ -16,6 +19,23 @@ def get_token(db: Session, key_id: int) -> str:
     update_token(db, api_key_obj, new_token)
     return new_token
 
+def process_new_key(api_key: str, description: str, db: Session):
+    existing = check_exact_key(db, api_key)
+    if existing:
+        raise ValueError(f"Ключ '{api_key}' уже существует")
+    create_api_key(db, api_key, description)
+    
+def download_nomenclature(db: Session, org_id: int, key_id: int):
+    token = get_token(db, key_id)
+    org = read_exact_organization(db, org_id)
+    data = api.fetch_nomenclature(token, org.organization_id)
+    file_content = json.dumps(data, ensure_ascii=False, indent=2)
+    file_bytes = BytesIO(file_content.encode("utf-8"))
+    return StreamingResponse(
+        file_bytes,
+        media_type="application/json",
+        headers={"Content-Disposition": f'attachment; filename="nomenclature.txt"'}
+    )
 def refresh_organizations(db: Session, key_id: int):
     token = get_token(db, key_id)
     data = api.fetch_organizations(token)
@@ -40,7 +60,6 @@ def refresh_order_types(db: Session, org_id: int, key_id: int):
     token = get_token(db, key_id)
     org = read_exact_organization(db, org_id)
     data = api.fetch_order_types(token, org.organization_id)
-    print(data)
     update_order_types(db, read_exact_key(db, key_id), data["orderTypes"])
     return data
 

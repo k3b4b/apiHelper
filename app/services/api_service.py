@@ -7,7 +7,8 @@ ENDPOINTS = {
         "terminals": "/terminal_groups",
         "payment_types": "/payment_types",
         "order_types": "/deliveries/order_types",
-        "discounts": "/discounts"
+        "discounts": "/discounts",
+        "nomenclature": "/nomenclature"
 }
 
 class ApiService:
@@ -23,7 +24,22 @@ class ApiService:
         )
         response.raise_for_status()
         return response.json()
-
+    
+    # запрос номенклатуры
+    def fetch_nomenclature(self, token: str, organization_id: str):
+        headers = {"Authorization": f"Bearer {token}"}
+        payload = {
+            "organizationId": organization_id, 
+            "startRevision": 0
+        }
+        response = requests.post(
+            self.build_url(ENDPOINTS["nomenclature"]),
+            headers=headers,
+            json=payload
+        )
+        response.raise_for_status()
+        return response.json()
+    
     # запрос организаций
     def fetch_organizations(self, token: str):
         headers = {"Authorization": f"Bearer {token}"}
@@ -64,7 +80,6 @@ class ApiService:
     
     def fetch_order_types(self, token: str, organization_id: str):
         headers = {"Authorization": f"Bearer {token}"}
-        print("Organization ID:", organization_id)
         payload = {
             "organizationIds": [organization_id]
         }

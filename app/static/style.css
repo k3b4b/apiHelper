@@ -143,3 +143,8 @@ tr.selected-row:hover td,
     color: white;               /* белый текст */
     border-radius: 4px;
 }
+
+.cooldown {
+    opacity: 0.5;
+    cursor: not-allowed !important;
+}

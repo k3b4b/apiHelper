@@ -18,12 +18,12 @@
 
 <h2>Выбор API ключа</h2>
 <div class="controls">
-    <select id="api-key-select">
+    <select id="api-key-select" onchange="loadOrganizations(this.value)">
         {% for key in api_keys %}
             <option value="{{ key.id }}">{{ key.description }}</option>
         {% endfor %}
     </select>
-    <button onclick="fetchOrganizations(document.getElementById('api-key-select').value)">
+    <button onclick="updateOrganizations(document.getElementById('api-key-select').value)">
         Получить организации
     </button>
 </div>
@@ -42,15 +42,15 @@
 </table>
 
 <!-- Вкладки + кнопка обновления -->
-<div class="tabs" id="tabs-container" style="display:flex; align-items:center;">
+<div class="tabs" id="tabs-container" style="display:none; align-items:center;">
     <div style="display:flex; gap:5px;">
         <button class="tab-button" data-type="terminals">Терминалы</button>
         <button class="tab-button" data-type="payment_types">Типы оплат</button>
         <button class="tab-button" data-type="order_types">Типы заказов</button>
         <button class="tab-button" data-type="discounts">Скидки</button>
-        <button class="tab-button" data-type="nomenclature">Номенклатура</button>
     </div>
     <button id="refresh-all-btn" style="margin-left:auto;">Обновить все данные</button>
+    <button id="download-nomenclature-btn" style="margin-left:5px;">Скачать номенклатуру</button>
 </div>
 
 <!-- Вторая таблица -->
@@ -65,7 +65,55 @@
 <script>
 let isFetching = false;
 
-async function fetchOrganizations(keyId) {
+function cooldownButton(button, seconds) {
+    button.disabled = true;
+    button.classList.add("cooldown");
+
+    // tooltip
+    button.title = `Подождите ${seconds} секунд перед повторным запросом`;
+
+    setTimeout(() => {
+        button.disabled = false;
+        button.classList.remove("cooldown");
+        button.title = "";
+    }, seconds * 1000);
+}
+
+async function updateOrganizations(keyId) {
+    if (!keyId) return;
+
+    // ищем кнопку (если она есть)
+    const refreshBtn = document.querySelector(
+        "button[onclick*='updateOrganizations']"
+    );
+
+    // запускаем UI-таймаут (если нашли кнопку)
+    if (refreshBtn) {
+        cooldownButton(refreshBtn, 30);
+    }
+
+    try {
+        const response = await fetch(`/api/update_organizations/${keyId}`);
+
+        if (!response.ok) {
+            alert("Ошибка при обновлении организаций");
+            return;
+        }
+
+        const result = await response.json();
+        console.log("Обновление организаций:", result.message || result.status);
+
+        // после загрузки — перечитать из базы
+        await loadOrganizations(keyId);
+
+    } catch (err) {
+        console.error(err);
+        alert("Ошибка соединения при обновлении организаций");
+    }
+}
+
+
+async function loadOrganizations(keyId) {
     const response = await fetch(`/api/get_organizations/${keyId}`);
     if (!response.ok) {
         alert("Ошибка при получении организаций");
@@ -73,6 +121,11 @@ async function fetchOrganizations(keyId) {
     }
     const data = await response.json();
     const tbody = document.querySelector("#org-table tbody");
+    // скрыть див целиком
+    document.getElementById("tabs-container").style.display = "none";
+    // скрыть вторую таблицу
+    document.getElementById("details-table").style.display = "none";
+    document.getElementById("details-table").dataset.orgId = "";
     tbody.innerHTML = "";
 
     data.forEach(org => {
@@ -95,7 +148,10 @@ function selectOrganization(button) {
     const orgId = parseInt(tr.dataset.orgId, 10); // internal_id для запросов
     const orgName = tr.querySelector("td").textContent;
 
+    document.getElementById("tabs-container").style.display = "flex";
+
     // Снимаем выделение со всех строк
+    document.querySelectorAll(".tab-button").forEach(b => b.classList.remove("active"));
     document.querySelectorAll("#org-table tbody tr").forEach(r => r.classList.remove("selected-row"));
     tr.classList.add("selected-row");
 
@@ -114,7 +170,8 @@ function selectOrganization(button) {
 }
 
 // Обработчик кнопки "Обновить все данные"
-document.getElementById("refresh-all-btn").addEventListener("click", async () => {
+const refreshBtn = document.getElementById("refresh-all-btn");
+refreshBtn.addEventListener("click", async () => {
     const detailsTable = document.getElementById("details-table");
     const orgIdStr = detailsTable.dataset.orgId;
 
@@ -139,6 +196,8 @@ document.getElementById("refresh-all-btn").addEventListener("click", async () =>
     if (isFetching) return;
     isFetching = true;
 
+    cooldownButton(refreshBtn, 30);
+
     try {
         const response = await fetch(`/api/refresh_all/${keyId}/${orgId}`, {
             method: "POST"
@@ -159,7 +218,6 @@ document.getElementById("refresh-all-btn").addEventListener("click", async () =>
         isFetching = false;
     }
 });
-
 // Обработчик для вкладок
 document.querySelectorAll(".tab-button").forEach(btn => {
     btn.addEventListener("click", async () => {
@@ -201,10 +259,10 @@ document.querySelectorAll(".tab-button").forEach(btn => {
                         const response = await fetch(`/api/get_payment_types/${orgId}`, { method: "POST" });
                         if (!response.ok) throw new Error("Ошибка при получении способов оплаты");
                         data = await response.json();
-                        thead.innerHTML = "<th>ID</th><th>Название</th>";
+                        thead.innerHTML = "<th>ID</th><th>Название</th><th>Вид</th><th>Код</th>";
                         data.forEach(p => {
                             const tr = document.createElement("tr");
-                            tr.innerHTML = `<td>${p.payment_type_id}</td><td>${p.name}</td>`;
+                            tr.innerHTML = `<td>${p.payment_type_id}</td><td>${p.name}</td><td>${p.payment_type_kind}</td><td>${p.code}</td>`;
                             tbody.appendChild(tr);
                         });
                     }
@@ -215,10 +273,10 @@ document.querySelectorAll(".tab-button").forEach(btn => {
                         const response = await fetch(`/api/get_order_types/${orgId}`, { method: "POST" });
                         if (!response.ok) throw new Error("Ошибка при получении типов заказов");
                         data = await response.json();
-                        thead.innerHTML = "<th>ID</th><th>Название</th>";
+                        thead.innerHTML = "<th>ID</th><th>Название</th><th>Тип</th>";
                         data.forEach(o => {
                             const tr = document.createElement("tr");
-                            tr.innerHTML = `<td>${o.order_type_id}</td><td>${o.name}</td>`;
+                            tr.innerHTML = `<td>${o.order_type_id}</td><td>${o.name}</td><td>${o.order_service_type}</td>`;
                             tbody.appendChild(tr);
                         });
                     }
@@ -246,6 +304,56 @@ document.querySelectorAll(".tab-button").forEach(btn => {
             console.error(err);
         }
     });
+});
+
+const downloadBtn = document.getElementById("download-nomenclature-btn");
+
+downloadBtn.addEventListener("click", async () => {
+    const keyId = document.getElementById("api-key-select").value;
+    if (!keyId) {
+        alert("Выберите API ключ!");
+        return;
+    }
+
+    const detailsTable = document.getElementById("details-table");
+    const orgIdStr = detailsTable.dataset.orgId;
+    if (!orgIdStr) {
+        alert("Сначала выберите организацию!");
+        return;
+    }
+    const orgId = parseInt(orgIdStr, 10);
+
+    // блокируем кнопку
+    cooldownButton(downloadBtn, 30);
+
+    try {
+        const response = await fetch(`/api/get/nomenclature/${keyId}/${orgId}`);
+        if (!response.ok) throw new Error("Ошибка при получении файла");
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "nomenclature.json";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        window.URL.revokeObjectURL(url);
+    } catch (err) {
+        console.error(err);
+        alert(err.message);
+    }
+});
+// Автозагрузка организаций при открытии страницы
+document.addEventListener("DOMContentLoaded", () => {
+    const keySelect = document.getElementById("api-key-select");
+    const initialKeyId = keySelect.value;
+
+    if (initialKeyId) {
+        loadOrganizations(initialKeyId);
+    }
 });
 
 </script>
