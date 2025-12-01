@@ -3,44 +3,55 @@
 <head>
     <title>API Helper by k3b4b</title>
     <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
 </head>
 <body>
-<h1>API Helper by k3b4b</h1>
 
-<h2>Добавить новый API ключ</h2>
-<form method="post" action="/api/add_api_key">
-    <label>API ключ:</label><br>
-    <input type="text" name="api_key" required><br>
-    <label>Описание:</label><br>
-    <input type="text" name="description"><br><br>
-    <button type="submit">Добавить</button>
-</form>
-
-<h2>Выбор API ключа</h2>
-<div class="controls">
-    <select id="api-key-select" onchange="loadOrganizations(this.value)">
-        {% for key in api_keys %}
-            <option value="{{ key.id }}">{{ key.description }}</option>
-        {% endfor %}
-    </select>
-    <button onclick="updateOrganizations(document.getElementById('api-key-select').value)">
-        Получить организации
-    </button>
+<div id="header">
+    <h1>API Helper by k3b4b v{{ version }}</h1>
+    <button id="theme-toggle">🌙 Тёмная тема</button>
+</div>
+<div id="api_key_management">
+    <div id="select_api_key">
+        <h2>Выбор API ключа</h2>
+        <select id="api-key-select" placeholder="Выбери организацию..." onchange="loadOrganizations(this.value)">
+            <option value="" selected></option>
+            {% for key in api_keys %}
+                <option value="{{ key.id }}">{{ key.description }}</option>
+            {% endfor %}
+        </select>
+        <button onclick="updateOrganizations(document.getElementById('api-key-select').value)" class="top_buttons">
+            Получить организации
+        </button>
+    </div>
+    <div id ="add_api_key">
+        <h2>Добавить новый API ключ</h2>
+        <form method="post" action="/api/add_api_key">
+            <label>API ключ:</label><br>
+            <input type="text" name="api_key" required placeholder="API ключ" maxlength="64"><br>
+            <label>Описание:</label><br>
+            <input type="text" name="description" required placeholder="Описание" maxlength="32"><br><br>
+            <button type="submit" class="top_buttons">Добавить</button>
+        </form>
+    </div>
 </div>
 
-<h2>Организации</h2>
-<table border="1" id="org-table">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Название</th>
-            <th>Выбрать</th>
-        </tr>
-    </thead>
-    <tbody>
-    </tbody>
-</table>
-
+<div id="organization_info">
+    <h2>Организации</h2>
+    <table border="1" id="org-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Название</th>
+                <th class="center-col">Выбрать</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
 <!-- Вкладки + кнопка обновления -->
 <div class="tabs" id="tabs-container" style="display:none; align-items:center;">
     <div style="display:flex; gap:5px;">
@@ -63,6 +74,15 @@
 </table>
 
 <script>
+new TomSelect('#api-key-select', {
+    create: false,     // запрет добавления новых элементов
+    sortField: {
+        field: "text",
+        direction: "asc"
+    }
+});
+
+    
 let isFetching = false;
 
 function cooldownButton(button, seconds) {
@@ -89,7 +109,7 @@ async function updateOrganizations(keyId) {
 
     // запускаем UI-таймаут (если нашли кнопку)
     if (refreshBtn) {
-        cooldownButton(refreshBtn, 30);
+        cooldownButton(refreshBtn, 5);
     }
 
     try {
@@ -114,6 +134,10 @@ async function updateOrganizations(keyId) {
 
 
 async function loadOrganizations(keyId) {
+        if (!keyId) {
+        console.log("API key is empty");
+        return;
+    }
     const response = await fetch(`/api/get_organizations/${keyId}`);
     if (!response.ok) {
         alert("Ошибка при получении организаций");
@@ -137,7 +161,7 @@ async function loadOrganizations(keyId) {
         tr.innerHTML = `
             <td>${org.id}</td>
             <td>${org.name}</td>
-            <td><button onclick="selectOrganization(this)">Выбрать</button></td>
+            <td class="center-col"><button onclick="selectOrganization(this)">Выбрать</button></td>
         `;
         tbody.appendChild(tr);
     });
@@ -196,7 +220,7 @@ refreshBtn.addEventListener("click", async () => {
     if (isFetching) return;
     isFetching = true;
 
-    cooldownButton(refreshBtn, 30);
+    cooldownButton(refreshBtn, 5);
 
     try {
         const response = await fetch(`/api/refresh_all/${keyId}/${orgId}`, {
@@ -324,7 +348,7 @@ downloadBtn.addEventListener("click", async () => {
     const orgId = parseInt(orgIdStr, 10);
 
     // блокируем кнопку
-    cooldownButton(downloadBtn, 30);
+    // cooldownButton(downloadBtn, 30);
 
     try {
         const response = await fetch(`/api/get/nomenclature/${keyId}/${orgId}`);
@@ -335,7 +359,7 @@ downloadBtn.addEventListener("click", async () => {
 
         const a = document.createElement("a");
         a.href = url;
-        a.download = "nomenclature.json";
+        a.download = "nomenclature.txt";
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -346,6 +370,29 @@ downloadBtn.addEventListener("click", async () => {
         alert(err.message);
     }
 });
+
+document.getElementById("theme-toggle").addEventListener("click", () => {
+    const body = document.body;
+
+    if (body.dataset.theme === "dark") {
+        body.dataset.theme = "light";
+        localStorage.setItem("theme", "light");
+        document.getElementById("theme-toggle").textContent = "🌙 Тёмная тема";
+    } else {
+        body.dataset.theme = "dark";
+        localStorage.setItem("theme", "dark");
+        document.getElementById("theme-toggle").textContent = "☀️ Светлая тема";
+    }
+});
+
+// Загружаем тему при старте страницы
+window.addEventListener("load", () => {
+    const saved = localStorage.getItem("theme") || "light";
+    document.body.dataset.theme = saved;
+    document.getElementById("theme-toggle").textContent =
+        saved === "dark" ? "☀️ Светлая тема" : "🌙 Тёмная тема";
+});
+
 // Автозагрузка организаций при открытии страницы
 document.addEventListener("DOMContentLoaded", () => {
     const keySelect = document.getElementById("api-key-select");

@@ -33,8 +33,8 @@ def download_nomenclature(db: Session, org_id: int, key_id: int):
     file_bytes = BytesIO(file_content.encode("utf-8"))
     return StreamingResponse(
         file_bytes,
-        media_type="application/json",
-        headers={"Content-Disposition": f'attachment; filename="nomenclature.txt"'}
+        media_type="text/plain; charset=utf-8",
+        headers={"Content-Disposition": 'attachment; filename="nomenclature.txt"'}
     )
 def refresh_organizations(db: Session, key_id: int):
     token = get_token(db, key_id)
@@ -46,28 +46,28 @@ def refresh_terminals(db: Session, org_id: int, key_id: int):
     token = get_token(db, key_id)
     org = read_exact_organization(db, org_id)
     data = api.fetch_terminals(token, org.organization_id)
-    update_terminals(db, read_exact_key(db, key_id), data["terminalGroups"])
+    update_terminals(db, org, data["terminalGroups"])
     return data
 
 def refresh_payment_types(db: Session, org_id: int, key_id: int):
     token = get_token(db, key_id)
     org = read_exact_organization(db, org_id)
     data = api.fetch_payment_types(token, org.organization_id)
-    update_payment_types(db, read_exact_key(db, key_id), data["paymentTypes"])
+    update_payment_types(db, org, data["paymentTypes"])
     return data
 
 def refresh_order_types(db: Session, org_id: int, key_id: int):
     token = get_token(db, key_id)
     org = read_exact_organization(db, org_id)
     data = api.fetch_order_types(token, org.organization_id)
-    update_order_types(db, read_exact_key(db, key_id), data["orderTypes"])
+    update_order_types(db, org, data["orderTypes"])
     return data
 
 def refresh_discount_types(db: Session, org_id: int, key_id: int):
     token = get_token(db, key_id)
     org = read_exact_organization(db, org_id)
     data = api.fetch_discount_types(token, org.organization_id)
-    update_discount_types(db, read_exact_key(db, key_id), data["discounts"])
+    update_discount_types(db, org, data["discounts"])
     return data
 
 def pass_essentials_api_keys(db: Session):

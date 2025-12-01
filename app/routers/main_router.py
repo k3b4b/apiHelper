@@ -25,21 +25,21 @@ def get_organizations_route(key_id: int, db: Session = Depends(get_db)):
     org_list = [{"internal_id": org.id, "id": org.organization_id, "name": org.name} for org in organizations]
     return JSONResponse(content=org_list)
 
-@router.get("/update_organizations/{key_id}",
-            dependencies=[Depends(limit_api_calls())])
+@router.get("/update_organizations/{key_id}",dependencies=[Depends(limit_api_calls("update_organizations"))])
 def update_organizations_route(key_id: int, db: Session = Depends(get_db)):
     data = refresh_organizations(db, key_id)
     return {"status": "ok", "message": "Организации загружены"}
     #return JSONResponse(content=data)
 
-@router.get("/get/nomenclature/{key_id}/{org_id}", dependencies=[Depends(limit_api_calls())])
+@router.get("/get/nomenclature/{key_id}/{org_id}", dependencies=[Depends(limit_api_calls("get_nomenclature"))])
 def get_nomenclature_route(key_id: int, org_id: int, db: Session = Depends(get_db)):
     return download_nomenclature(db, org_id, key_id)
 
-@router.post("/get_terminals/{org_id}")
+@router.post("/get_terminals/{org_id}", )
 def get_terminals_route(org_id: int, db: Session = Depends(get_db)):
     terminals = pass_terminals(db, org_id)
     term_list = [{"terminal_id": t.terminal_id, "name": t.name} for t in terminals]
+    print (f"DEBUG: term_list = {term_list}")
     return JSONResponse(content=term_list)
 
 @router.post("/get_payment_types/{org_id}")
@@ -61,8 +61,32 @@ def get_discount_types_route(org_id: int, db: Session = Depends(get_db)):
     discount_list = [{"discount_type_id": d.discount_type_id, "name": d.name} for d in discount_types]
     return JSONResponse(content=discount_list)
 
-@router.post("/refresh_all/{key_id}/{org_id}",
-            dependencies=[Depends(limit_api_calls())])
+@router.post("/refresh_terminals/{key_id}/{org_id}",
+            dependencies=[Depends(limit_api_calls("refresh_terminals"))])
+def refresh_terminals_route(key_id: int, org_id: int, db: Session = Depends(get_db)):
+    terminals = refresh_terminals(db, org_id, key_id)
+    return {"status": "ok", "message": "Терминалы обновлены"}
+
+@router.post("/refresh_payment_types/{key_id}/{org_id}",
+            dependencies=[Depends(limit_api_calls("refresh_payment_types"))])
+def refresh_payment_types_route(key_id: int, org_id: int, db: Session = Depends(get_db)):
+    payment_types = refresh_payment_types(db, org_id, key_id)
+    return {"status": "ok", "message": "Типы оплат обновлены"}
+
+@router.post("/refresh_order_types/{key_id}/{org_id}",
+            dependencies=[Depends(limit_api_calls("refresh_order_types"))])
+def refresh_order_types_route(key_id: int, org_id: int, db: Session = Depends(get_db)):
+    order_types = refresh_order_types(db, org_id, key_id)
+    return {"status": "ok", "message": "Типы заказов обновлены"}
+
+@router.post("/refresh_discount_types/{key_id}/{org_id}",
+            dependencies=[Depends(limit_api_calls("refresh_discount_types"))])
+def refresh_discount_types_route(key_id: int, org_id: int, db: Session = Depends(get_db)):
+    discount_types = refresh_discount_types(db, org_id, key_id)
+    return {"status": "ok", "message": "Типы скидок обновлены"}
+
+#убрать потом лимит на коллы, нужно использовать лимит собственных функций и вообще переписать это
+@router.post("/refresh_all/{key_id}/{org_id}", dependencies=[Depends(limit_api_calls("refresh_all"))])
 def refresh_all_route(key_id: int, org_id: int, db: Session = Depends(get_db)):
     terminals = refresh_terminals(db, org_id, key_id)
     payment_types = refresh_payment_types(db, org_id, key_id)

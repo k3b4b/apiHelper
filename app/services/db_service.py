@@ -70,6 +70,7 @@ def update_terminals(db: Session, organization_obj: models.Organization, termina
                     terminal_id=terminal_id,
                     name=terminal_name,
                 )
+                print (f"DEBUG: Adding new terminal: {new_terminal.organization_id}")
                 db.add(new_terminal)
                 continue
 

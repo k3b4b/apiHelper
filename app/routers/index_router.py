@@ -5,6 +5,8 @@ from app.db import models
 from app.templates.templates import templates
 from app.services.main_service import pass_essentials_api_keys
 
+VERSION = "0.5.0"
+
 router = APIRouter()
 
 @router.get("/")
@@ -17,6 +19,7 @@ def index(request: Request, db: Session = Depends(get_db)):
         {
             "request": request,
             "api_keys": api_keys,
-            "organizations": []
+            "organizations": [],
+            "version": VERSION
         }
     )

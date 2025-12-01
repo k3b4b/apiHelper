@@ -1,14 +1,44 @@
+/* ========== ТЕМЫ ========== */
+
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f7f8fa;
-    color: #333;
-    margin: 0;
-    padding: 20px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --bg-color: #f5f5f5;
+    --text-color: #222;
+    --card-bg: #ffffff;
+    --input-bg: #ffffff;
+    --border-color: #ccc;
+
+    --button-bg: #276d9c;
+    --button-bg-hover: #2f87c2;
+    --button-text: #ffffff;
+
+    --selected-row: #56a359;
+    --table-row-hover: #f0f0f0;
+
+    background: var(--bg-color);
+    color: var(--text-color);
 }
 
-h1, h2 {
-    color: #2c3e50;
+/* ---------- ТЁМНАЯ ТЕМА ---------- */
+
+body[data-theme="dark"] {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --bg-color: #202225;
+    --text-color: #e0e0e0;
+    --card-bg: #2f3136;
+    --input-bg: #2c2d30;
+    --border-color: #555;
+
+    --button-bg: #276d9c;
+    --button-bg-hover: #2f87c2;
+    --button-text: #ffffff;
+
+    --selected-row: #655885;
+    --table-row-hover: #3a3c42;
 }
+
+
+/* ========== ТИПОГРАФИЯ ========== */
 
 h1 {
     font-size: 28px;
@@ -17,134 +47,294 @@ h1 {
 
 h2 {
     font-size: 22px;
-    margin-top: 30px;
-    margin-bottom: 10px;
+    margin-top: 0px;
+    margin-bottom: 20px;
 }
 
-/* Селект и кнопка */
-select, input[type="text"], button {
-    padding: 8px 12px;
-    margin: 5px 0;
+/* ========== ИНПУТЫ И СЕЛЕКТЫ ========== */
+
+input,
+select {
+    background: var(--input-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 8px;
     border-radius: 5px;
-    border: 1px solid #ccc;
-    font-size: 14px;
 }
+
+input:focus,
+select:focus {
+    outline: none;
+    border-color: var(--button-bg);
+}
+
+/* ========== КНОПКИ ========== */
 
 button {
-    background-color: #3498db;
-    color: white;
+    background: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background 0.2s;
+}
+
+button:hover:not(:disabled) {
+    background: var(--button-bg-hover);
 }
 
 button:disabled {
     background-color: #95a5a6;
     cursor: not-allowed;
+    color: #eee;
 }
 
-button:hover:not(:disabled) {
-    background-color: #2980b9;
-}
-
-/* Таблица */
-table {
-    width: 100%;
-    border-collapse: collapse;
+.top_buttons {
     margin-top: 10px;
-    background-color: white;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    align-self: center;   /* центрируем кнопку по горизонтали */
 }
 
-th, td {
+#add_api_key form {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+#add_api_key form button {
+    margin-top: auto;       /* отправляет кнопку вниз */
+    align-self: center;     /* центрируем по горизонтали */
+}
+
+/* ========== ТАБЛИЦА ========== */
+
+#organization_info {
+    margin-top: 40px;
+}
+
+.center-col {
+    text-align: center;
+}
+
+#organization_info h2 {
+    margin: 20px auto;
+    width: 95%;
+}
+
+table {
+    width: 95%;
+    border-collapse: collapse;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    margin: 10px auto;
+}
+
+th,
+td {
     padding: 10px;
     text-align: left;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--border-color);
 }
 
 th {
-    background-color: #ecf0f1;
+    background-color: var(--card-bg);
+    font-weight: bold;
 }
 
 tr:hover {
-    background-color: #f1f1f1;
+    background-color: var(--table-row-hover);
 }
 
-/* Форма добавления ключа */
+/* выделенная строка */
+.selected-row {
+    background-color: var(--selected-row) !important;
+    color: #fff;
+}
+
+tr.selected-row:hover td {
+    background-color: var(--selected-row) !important;
+}
+
+/* ========== ФОРМА ДОБАВЛЕНИЯ КЛЮЧА ========== */
+
 form {
-    background-color: #fff;
-    padding: 15px 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    max-width: 400px;
-}
-
-form label {
-    font-weight: bold;
+    background-color: var(--card-bg);
+    padding: 0px 0px;
+    max-width: 500px;
 }
 
 form input {
     width: 100%;
+    height: 40px;
+    box-sizing: border-box;
     margin-bottom: 10px;
 }
 
-/* Контейнер для кнопок и селекта */
-.controls {
-    margin-bottom: 20px;
+form label {
+    font-weight: bold;
+    margin-bottom: -10px;
+    color: var(--text-color);
 }
 
+/* ========== ТАБЫ ========== */
+
 .tabs {
-    margin-top: 20px;
+    margin: 15px auto;
     display: flex;
+    width: 95%;
     gap: 10px;
     flex-wrap: wrap;
 }
 
 .tab-button {
     padding: 8px 15px;
-    border: 1px solid #ccc;
-    background-color: #666161;
     border-radius: 5px;
+    border: 1px solid var(--border-color);
+    background-color: var(--input-bg);
+    color: var(--text-color);
     cursor: pointer;
-    transition: background-color 0.2s, color 0.2s;
-}
-
-.tab-button.active {
-    background-color: #3498db;
-    color: white;
-    border-color: #2980b9;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
 }
 
 .tab-button:hover:not(.active) {
-    background-color: #7bb3d8;
-}
-
-.selected-row {
-    background-color: #7cc57c; /* светло-голубой фон */
-}
-
-/* Не менять подсветку выбранной строки при наведении */
-tr.selected-row:hover,
-tr.selected-row:hover td,
-.selected-row:hover,
-.selected-row:hover td {
-    background-color: #7cc57c;
-    transition: none;
-}
-
-/* style.css */
-.tab-button {
-    padding: 5px 10px;
-    margin-right: 5px;
-    cursor: pointer;
+    background-color: var(--table-row-hover);
 }
 
 .tab-button.active {
-    background-color: #007BFF; /* синий фон */
-    color: white;               /* белый текст */
-    border-radius: 4px;
+    background-color: var(--button-bg);
+    color: white;
+    border-color: var(--button-bg-hover);
 }
+
+/* ========== КОНТЕЙНЕРЫ ========== */
+
+#api_key_management {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-left: 130px;
+    padding-right: 130px;
+}
+
+#add_api_key,
+#select_api_key {
+    display: flex;
+    flex-direction: column;      /* элементы — вертикально */
+    justify-content: space-between; /* растягиваем, кнопка внизу */
+    background: var(--card-bg);
+    color: var(--text-color);
+    padding: 20px;
+    border-radius: 10px;
+    width: 500px;
+    min-height: 280px;   /* задать минимальную, но не фиксированную */
+    height: auto;        /* пусть растягивается сколько нужно */
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+
+/* ========== ТОГГЛ ТЕМЫ ========== */
+
+#theme-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 8px 12px;
+    border: none;
+    background-color: var(--button-bg);
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#theme-toggle:hover {
+    background-color: var(--button-bg-hover);
+}
+
+/* ========== ПРОЧЕЕ ========== */
 
 .cooldown {
     opacity: 0.5;
     cursor: not-allowed !important;
+}
+
+.add_api_key {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+}
+
+#header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* ========== TOM SELECT СТИЛИ ПОД ТЕМУ САЙТА ========== */
+
+/* Основной контейнер */
+.ts-wrapper .ts-control {
+    height: 40px;
+    background: var(--input-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-color) !important;
+    border-radius: 6px;
+    padding: 6px 8px;
+    box-shadow: none !important;
+}
+
+/* Текст внутри */
+.ts-wrapper .ts-control input {
+    color: var(--text-color) !important;
+    padding-top: 5px;
+}
+
+/* Выпадающее меню */
+.ts-dropdown {
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-color) !important;
+}
+
+/* Элементы списка */
+.ts-dropdown .option {
+    padding: 8px;
+    cursor: pointer;
+    color: var(--text-color) !important;
+}
+
+/* Наведение */
+.ts-dropdown .option:hover,
+.ts-dropdown .option.active {
+    background-color: var(--table-row-hover) !important;
+    color: var(--text-color) !important;
+}
+
+/* Выбранный элемент в Select */
+.ts-wrapper.single .ts-control .item {
+    color: var(--text-color) !important;
+    display: flex;
+    align-items: center;
+}
+
+/* Значок очистки (x) */
+.ts-wrapper .ts-control .clear-button {
+    color: var(--text-color) !important;
+}
+
+/* Фокус */
+.ts-wrapper .ts-control:focus,
+.ts-wrapper .ts-control.focus {
+    border-color: var(--button-bg) !important;
+    box-shadow: 0 0 0 1px var(--button-bg) !important;
+}
+
+/* Стрелочка (dropdown arrow) */
+.ts-wrapper .ts-control::after {
+    border-color: var(--text-color) transparent transparent !important;
+}
+
+/* Disable */
+.ts-wrapper.disabled .ts-control {
+    background-color: #888 !important;
+    opacity: 0.6;
 }
