@@ -7,25 +7,35 @@ from src.services.api_service import ApiService
 from src.core.logger import logger
 from typing import List, Dict, Optional, Type
 from src.services.db_service import check_token, create_api_key, read_entities, update_token, upsert_entities
+from src.core.cryptography import decrypt_entity
+from src.core.token_management import get_token as redis_get_token, set_token as redis_set_token
 
-# нюхаем токен, если свежий - возвращаем, если нет - обновляем
+# нюхаем токен в редисе, если нет - в бд, если просрочен - запрашиваем новый у апи и сохраняем в бд и редис
 def get_token(db: Session, key_id: int) -> str:
     logger.debug(f"Request token for key_id={key_id}")
+    cached_token = redis_get_token(key_id)
+    if cached_token:
+        logger.debug(f"Token found in cache. Returning cached token.")
+        return cached_token
+    logger.debug(f"Token not found in cache. Checking database...")
     api_key_obj = read_entities(db, models.ApiKey, filters={"id": key_id}, single=True)
     if not api_key_obj:
         logger.warning(f"API key with id={key_id} not found.")
         return None
     token = check_token(db, api_key_obj)
     if token:
-        logger.debug(f"Token is fresh. Returning cached token.")
+        token = decrypt_entity(token)
+        logger.debug(f"Token is fresh in database. Caching and returning token.")
+        redis_set_token(key_id, token)
         return token
     logger.info(f"Token expired. Fetching a new one from API...")
     temp_api = ApiService()
-    data = temp_api.fetch_token(api_key_obj.api_key)
+    data = temp_api.fetch_token(decrypt_entity(api_key_obj.api_key))
     new_token = data["token"]
     masked = new_token[:5] + "..." + new_token[-5:]
     logger.info(f"New token received: {masked}")
     update_token(db, api_key_obj, new_token)
+    redis_set_token(key_id, new_token)
     return new_token
 
 # создаем экземпляр ApiService с нужным токеном

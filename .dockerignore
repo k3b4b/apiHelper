@@ -1,0 +1,35 @@
+# python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# virtualenv
+venv/
+.venv/
+env/
+
+# ide
+.vscode/
+.idea/
+
+# git
+.git/
+.gitignore
+
+# env
+.env
+.env.*
+
+# logs
+*.log
+
+# os
+.DS_Store
+Thumbs.db
+
+# docker
+Dockerfile
+docker-compose.yml
+
+

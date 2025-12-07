@@ -4,8 +4,9 @@ from sqlalchemy.orm import Session
 from src.db import models
 from src.templates.templates import templates
 from src.services.main_service import pass_essentials_api_keys
+from src.core.config import RATE_LIMIT_SECONDS
 
-VERSION = "0.6.0"
+VERSION = "1.0.0"
 
 router = APIRouter()
 
@@ -19,6 +20,7 @@ def index(request: Request, db: Session = Depends(get_db)):
             "request": request,
             "api_keys": api_keys,
             "organizations": [],
-            "version": VERSION
+            "version": VERSION,
+            "timeout_seconds": RATE_LIMIT_SECONDS
         }
     )

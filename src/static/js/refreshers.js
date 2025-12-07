@@ -20,7 +20,7 @@ async function updateOrganizations(keyId) {
     );
 
     if (refreshBtn) {
-        cooldownButton(refreshBtn, 5);
+        cooldownButton(refreshBtn, TIMEOUT_SECONDS);
     }
 
     try {
@@ -45,7 +45,7 @@ async function refreshAll(keyId, orgId, button) {
     if (isFetching) return;
     isFetching = true;
 
-    if (button) cooldownButton(button, 5);
+    if (button) cooldownButton(button, TIMEOUT_SECONDS);
 
     try {
         const response = await fetch(`/api/refresh_all/${keyId}/${orgId}`, {
@@ -71,7 +71,7 @@ async function refreshAll(keyId, orgId, button) {
 async function refreshEntity(keyId, orgId, entity, button) {
     if (isFetching) return;
     isFetching = true;
-    if (button) cooldownButton(button, 5);
+    if (button) cooldownButton(button, TIMEOUT_SECONDS);
 
     try {
         const response = await fetch(

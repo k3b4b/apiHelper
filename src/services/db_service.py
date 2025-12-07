@@ -4,8 +4,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from src.db import models
 from typing import List, Dict, Callable, Optional, Type
 from src.core.logger import logger
-
-TOKEN_TTL = 3600 # TTL токена, 3600 сек или 1 час
+from src.core.config import TOKEN_TTL
+from src.core.cryptography import encrypt_entity
 
 # проверка свежести токена в бд
 def check_token(db: Session, api_key_obj: models.ApiKey):
@@ -20,7 +20,7 @@ def check_token(db: Session, api_key_obj: models.ApiKey):
 # обновление токена в бд
 def update_token(db: Session, api_key_obj: models.ApiKey, new_token: str): 
     try:
-        api_key_obj.access_token = new_token
+        api_key_obj.access_token = encrypt_entity(new_token)
         api_key_obj.token_ttl = datetime.utcnow() + timedelta(seconds=TOKEN_TTL)
         db.commit()
         db.refresh(api_key_obj)
@@ -34,7 +34,7 @@ def update_token(db: Session, api_key_obj: models.ApiKey, new_token: str):
 # создание новой записи с апи ключом
 def create_api_key(db: Session, api_key: str, description: str):
     try:
-        new_key = models.ApiKey(api_key=api_key, description=description)
+        new_key = models.ApiKey(api_key=encrypt_entity(api_key), description=description)
         db.add(new_key)
         db.commit()
         db.refresh(new_key)
@@ -87,6 +87,8 @@ def read_entities(db: Session, model: Type, filters: Optional[Dict] = None, sing
         logger.exception(f"Read failed for model {model.__name__}: {str(e)}")
         raise
     
+#----------------------------------------------------------------------
+# работа с юзерами
 
  
 
