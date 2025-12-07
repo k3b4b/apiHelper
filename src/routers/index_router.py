@@ -1,19 +1,18 @@
 from fastapi import APIRouter, Request, Depends
-from app.db.database import get_db
+from src.db.database import get_db
 from sqlalchemy.orm import Session
-from app.db import models
-from app.templates.templates import templates
-from app.services.main_service import pass_essentials_api_keys
+from src.db import models
+from src.templates.templates import templates
+from src.services.main_service import pass_essentials_api_keys
 
-VERSION = "0.5.0"
+VERSION = "0.6.0"
 
 router = APIRouter()
 
+# роутер основной страницы - передаёт в неё список ключей (ВНУТРЕННИЕ АЙДИ и названия)
 @router.get("/")
 def index(request: Request, db: Session = Depends(get_db)):
     api_keys = pass_essentials_api_keys(db)
-    #organizations = db.query(models.Organization).all()
-
     return templates.TemplateResponse(
         "index.html",
         {

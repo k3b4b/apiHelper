@@ -4,6 +4,8 @@ from datetime import datetime
 
 from .database import Base
 
+# определение моделей базы данных. тут связи между таблицами идут по ВНУТРЕННИМ айдишникам
+# организации связаны с ключами, остальные справочники с организациями
 class User(Base):
     __tablename__ = "users"
 
@@ -28,6 +30,7 @@ class ApiKey(Base):
     organizations = relationship("Organization", back_populates="api_key")
     access_records = relationship("ApiAccess", back_populates="api_key")
 
+# пока что не реализовано - планируется для контроля доступа юзеров к ключам
 class ApiAccess(Base):
     __tablename__ = "api_access"
 

@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
+# путь до .db файла
 DATABASE_URL = "sqlite:///./data/data.db"
 
 engine = create_engine(

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Helper by k3b4b</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+</head>
+<body>
+
+<div id="header">
+    <h1>API Helper by k3b4b v{{ version }}</h1>
+    <button id="theme-toggle">🌙 Тёмная тема</button>
+</div>
+<div id="api_key_management">
+    <div id="select_api_key">
+        <h2>Выбор API ключа</h2>
+        <select id="api-key-select" placeholder="Выбери организацию..." onchange="loadOrganizations(this.value)">
+            <option value="" selected></option>
+            {% for key in api_keys %}
+                <option value="{{ key.id }}">{{ key.description }}</option>
+            {% endfor %}
+        </select>
+        <button onclick="updateOrganizations(document.getElementById('api-key-select').value)" class="top_buttons">
+            Получить организации
+        </button>
+    </div>
+    <div id ="add_api_key">
+        <h2>Добавить новый API ключ</h2>
+        <form method="post" action="/api/add_api_key">
+            <label>API ключ:</label><br>
+            <input type="text" name="api_key" required placeholder="API ключ" maxlength="64"><br>
+            <label>Описание:</label><br>
+            <input type="text" name="description" required placeholder="Описание" maxlength="32"><br><br>
+            <button type="submit" class="top_buttons">Добавить</button>
+        </form>
+    </div>
+</div>
+
+<div id="organization_info">
+    <h2>Организации</h2>
+    <table border="1" id="org-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Название</th>
+                <th class="center-col">Выбрать</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+<!-- Вкладки + кнопка обновления -->
+<div class="tabs" id="tabs-container" style="display:none; align-items:center;">
+    <div style="display:flex; gap:5px;">
+        <button class="tab-button" data-type="terminals">Терминалы</button>
+        <button class="tab-button" data-type="payment_types">Типы оплат</button>
+        <button class="tab-button" data-type="order_types">Типы заказов</button>
+        <button class="tab-button" data-type="discounts">Скидки</button>
+    </div>
+    <button id="refresh-all-btn" style="margin-left:auto;">Обновить все данные</button>
+    <button id="download-nomenclature-btn" style="margin-left:5px;">Скачать номенклатуру</button>
+</div>
+
+<!-- Вторая таблица -->
+<table border="1" id="details-table" style="display:none;">
+    <thead>
+        <tr></tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+<script src="/static/js/refreshers.js" defer></script>
+<script src="/static/js/main.js" defer></script>
+</body>
+</html>
