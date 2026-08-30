@@ -14,24 +14,44 @@
     <button id="theme-toggle">🌙 Тёмная тема</button>
 </div>
 <div id="api_key_management">
-    <div id="select_api_key">
-        <h2>Выбор API ключа</h2>
-        <div class="api-key-select-row">
-            <select id="api-key-select" placeholder="Выбери организацию...">
-                <option value="" selected></option>
-                {% for key in api_keys %}
-                    <option value="{{ key.id }}">{{ key.description }}</option>
-                {% endfor %}
-            </select>
-            <button type="button" id="favorite-toggle-btn" aria-label="Добавить API-ключ в избранное" title="Добавить в избранное" disabled>☆</button>
-        </div>
-        <button onclick="updateOrganizations(document.getElementById('api-key-select').value)" class="top_buttons">
+<div id="select_api_key">
+
+    <h2>Выбор API ключа</h2>
+
+    <div class="api-key-select-row">
+        <select id="api-key-select">
+            <option value="" selected></option>
+
+            {% for key in api_keys %}
+                <option value="{{ key.id }}">{{ key.description }}</option>
+            {% endfor %}
+        </select>
+
+        <button
+            type="button"
+            id="favorite-toggle-btn"
+            aria-label="Добавить API-ключ в избранное"
+            title="Добавить в избранное"
+            disabled>
+            ☆
+        </button>
+    </div>
+
+    <div class="select-api-key-bottom">
+
+        <button
+            onclick="updateOrganizations(document.getElementById('api-key-select').value)"
+            class="top_buttons">
             Получить организации
         </button>
-        <small class="organizations-hint">
-            При первом нажатии данные будут сохранены в базу. Повторно нажимать при отсутствии изменений не нужно.
-        </small>
+
+        <div class="organizations-hint">
+            Здесь будет подсказка
+        </div>
+
     </div>
+
+</div>
     <div id="favorite_api_keys">
         <h2>Избранные API ключи</h2>
         <div id="favorite-api-key-list"></div>

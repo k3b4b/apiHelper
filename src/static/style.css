@@ -99,7 +99,7 @@ button:disabled {
     display: block;
     margin-top: 16px;
     color: var(--text-color);
-    font-size: 11px;
+    font-size: 9px;
     line-height: 1.4;
     opacity: 0.7;
     text-align: center;
@@ -295,8 +295,8 @@ form label {
 #select_api_key,
 #favorite_api_keys {
     display: flex;
-    flex-direction: column;      /* элементы — вертикально */
-    justify-content: space-between; /* растягиваем, кнопка внизу */
+    flex-direction: column;
+    justify-content: space-between;
     background: var(--card-bg);
     color: var(--text-color);
     padding: 30px;
@@ -308,13 +308,23 @@ form label {
     box-shadow: 0 2px 6px rgba(0,0,0,0.25);
 }
 
+#add_api_key .api-key-fields {
+    flex: 1;
+}
+
 #add_api_key form {
     box-sizing: border-box;
     width: 100%;
     max-width: none;
+
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
 }
 
 #add_api_key form button {
+    margin-top: auto;
     align-self: center;
 }
 
@@ -323,7 +333,8 @@ form label {
 }
 
 #select_api_key .organizations-hint {
-    margin-bottom: 0;
+    margin: 0;
+    padding: 0;
 }
 
 @media (max-width: 1000px) {
