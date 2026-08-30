@@ -1,11 +1,91 @@
 // ---- TomSelect ----
-new TomSelect('#api-key-select', {
+const apiKeySelectControl = new TomSelect('#api-key-select', {
     create: false,
     sortField: {
         field: "text",
         direction: "asc"
     }
 });
+
+const FAVORITE_API_KEYS_STORAGE = "favoriteApiKeys";
+
+function getFavoriteApiKeys() {
+    try {
+        const favorites = JSON.parse(localStorage.getItem(FAVORITE_API_KEYS_STORAGE) || "[]");
+        return Array.isArray(favorites) ? favorites : [];
+    } catch (err) {
+        console.error("Не удалось прочитать избранные API-ключи", err);
+        return [];
+    }
+}
+
+function saveFavoriteApiKeys(favorites) {
+    localStorage.setItem(FAVORITE_API_KEYS_STORAGE, JSON.stringify(favorites));
+}
+
+function updateFavoriteToggle() {
+    const button = document.getElementById("favorite-toggle-btn");
+    const keyId = document.getElementById("api-key-select").value;
+    const isFavorite = getFavoriteApiKeys().some(item => item.id === keyId);
+
+    button.disabled = !keyId;
+    button.textContent = isFavorite ? "★" : "☆";
+    button.title = isFavorite ? "Удалить из избранного" : "Добавить в избранное";
+    button.setAttribute("aria-label", button.title);
+}
+
+function renderFavoriteApiKeys() {
+    const list = document.getElementById("favorite-api-key-list");
+    const favorites = getFavoriteApiKeys().filter(item => apiKeySelectControl.options[item.id]);
+
+    saveFavoriteApiKeys(favorites);
+    list.innerHTML = "";
+
+    if (!favorites.length) {
+        const emptyState = document.createElement("span");
+        emptyState.className = "favorites-empty";
+        emptyState.textContent = "Здесь пока нет избранных ключей";
+        list.appendChild(emptyState);
+        return;
+    }
+
+    favorites.forEach(favorite => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "favorite-api-key-btn";
+        button.textContent = favorite.name;
+        button.addEventListener("click", () => apiKeySelectControl.setValue(favorite.id));
+        list.appendChild(button);
+    });
+}
+
+document.getElementById("favorite-toggle-btn").addEventListener("click", () => {
+    const select = document.getElementById("api-key-select");
+    const keyId = select.value;
+    if (!keyId) return;
+
+    const keyName = select.options[select.selectedIndex]?.textContent.trim() || keyId;
+    const favorites = getFavoriteApiKeys();
+    const favoriteIndex = favorites.findIndex(item => item.id === keyId);
+
+    if (favoriteIndex >= 0) {
+        favorites.splice(favoriteIndex, 1);
+    } else {
+        favorites.push({ id: keyId, name: keyName });
+    }
+
+    saveFavoriteApiKeys(favorites);
+    renderFavoriteApiKeys();
+    updateFavoriteToggle();
+});
+
+apiKeySelectControl.on("change", keyId => {
+    updateFavoriteToggle();
+    if (keyId) loadOrganizations(keyId);
+});
+
+renderFavoriteApiKeys();
+updateFavoriteToggle();
 
 // ---- Организации ----
 async function loadOrganizations(keyId) {

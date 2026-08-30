@@ -95,6 +95,51 @@ button:disabled {
     align-self: center;   /* центрируем кнопку по горизонтали */
 }
 
+.organizations-hint {
+    display: block;
+    margin-top: 12px;
+    color: var(--text-color);
+    font-size: 12px;
+    line-height: 1.4;
+    opacity: 0.7;
+}
+
+.api-key-select-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.api-key-select-row .ts-wrapper {
+    flex: 1;
+    min-width: 0;
+}
+
+#favorite-toggle-btn {
+    flex: 0 0 40px;
+    height: 40px;
+    padding: 0;
+    font-size: 24px;
+    line-height: 40px;
+}
+
+#favorite-api-key-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+}
+
+.favorite-api-key-btn {
+    width: 100%;
+    text-align: left;
+}
+
+.favorites-empty {
+    font-size: 13px;
+    opacity: 0.65;
+}
+
 #add_api_key form {
     display: flex;
     flex-direction: column;
@@ -209,15 +254,17 @@ form label {
 /* ========== КОНТЕЙНЕРЫ ========== */
 
 #api_key_management {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
     align-items: flex-start;
-    padding-left: 130px;
-    padding-right: 130px;
+    width: 95%;
+    margin: 0 auto;
 }
 
 #add_api_key,
-#select_api_key {
+#select_api_key,
+#favorite_api_keys {
     display: flex;
     flex-direction: column;      /* элементы — вертикально */
     justify-content: space-between; /* растягиваем, кнопка внизу */
@@ -225,11 +272,18 @@ form label {
     color: var(--text-color);
     padding: 20px;
     border-radius: 10px;
-    width: 500px;
+    box-sizing: border-box;
+    width: 100%;
     min-height: 280px;   /* задать минимальную, но не фиксированную */
     height: auto;        /* пусть растягивается сколько нужно */
     border: 1px solid var(--border-color);
     box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+
+@media (max-width: 1000px) {
+    #api_key_management {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* ========== ТОГГЛ ТЕМЫ ========== */
