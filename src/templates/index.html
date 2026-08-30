@@ -39,10 +39,12 @@
     <div id ="add_api_key">
         <h2>Добавить новый API ключ</h2>
         <form method="post" action="/api/add_api_key">
-            <label>API ключ:</label><br>
-            <input type="text" name="api_key" required placeholder="API ключ" maxlength="64"><br>
-            <label>Описание:</label><br>
-            <input type="text" name="description" required placeholder="Описание" maxlength="32"><br><br>
+            <div class="api-key-fields">
+                <label for="new-api-key">API ключ:</label>
+                <input id="new-api-key" type="text" name="api_key" required placeholder="API ключ" maxlength="64">
+                <label for="new-api-key-description">Описание:</label>
+                <input id="new-api-key-description" type="text" name="description" required placeholder="Описание" maxlength="32">
+            </div>
             <button type="submit" class="top_buttons">Добавить</button>
         </form>
     </div>
