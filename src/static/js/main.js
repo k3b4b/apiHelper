@@ -53,6 +53,9 @@ function renderFavoriteApiKeys() {
         const button = document.createElement("button");
         button.type = "button";
         button.className = "favorite-api-key-btn";
+        if (favorite.id === document.getElementById("api-key-select").value) {
+            button.classList.add("active");
+        }
         button.textContent = favorite.name;
         button.addEventListener("click", () => apiKeySelectControl.setValue(favorite.id));
         list.appendChild(button);
@@ -81,6 +84,7 @@ document.getElementById("favorite-toggle-btn").addEventListener("click", () => {
 
 apiKeySelectControl.on("change", keyId => {
     updateFavoriteToggle();
+    renderFavoriteApiKeys();
     if (keyId) loadOrganizations(keyId);
 });
 
