@@ -60,26 +60,51 @@ function selectOrganization(button) {
 
     detailsTable.querySelector("thead tr").innerHTML = "";
     detailsTable.querySelector("tbody").innerHTML = "";
-    document.getElementById("download-details-btn").disabled = true;
 }
 
 function getDetailsTableText() {
     const detailsTable = document.getElementById("details-table");
-    const rows = [];
-
     const headers = Array.from(detailsTable.querySelectorAll("thead th"))
         .slice(1)
         .map(cell => cell.textContent.trim());
+    const rows = [headers];
     if (headers.length) rows.push(headers.join("\t"));
 
     detailsTable.querySelectorAll("tbody tr").forEach(row => {
         const values = Array.from(row.querySelectorAll("td"))
             .slice(1)
-            .map(cell => cell.textContent.trim());
-        rows.push(values.join("\t"));
+            .map(cell => cell.textContent.trim().replace(/[\t\r\n]+/g, " "));
+        rows.push(values);
     });
 
-    return rows.join("\n");
+    if (!headers.length) return "";
+
+    const columnWidths = headers.map((_, columnIndex) =>
+        Math.max(...rows.map(row => (row[columnIndex] || "").length))
+    );
+
+    return rows
+        .map(row => row
+            .map((value, columnIndex) =>
+                columnIndex === row.length - 1
+                    ? value
+                    : value.padEnd(columnWidths[columnIndex] + 2, " ")
+            )
+            .join("")
+            .trimEnd()
+        )
+        .join("\r\n");
+}
+
+function getSelectedKeyName() {
+    const keySelect = document.getElementById("api-key-select");
+    return keySelect.options[keySelect.selectedIndex]?.textContent.trim() || "api-key";
+}
+
+function sanitizeFileName(fileName) {
+    return fileName
+        .replace(/[<>:\"/\\|?*\x00-\x1F]/g, "_")
+        .replace(/[. ]+$/g, "") || "api-key";
 }
 
 async function copyDetailsRow(button) {
@@ -120,10 +145,9 @@ document.getElementById("download-details-btn").addEventListener("click", () => 
         return;
     }
 
-    const keySelect = document.getElementById("api-key-select");
-    const selectedOption = keySelect.options[keySelect.selectedIndex];
-    const keyName = selectedOption?.textContent.trim() || "api-key";
-    const safeFileName = keyName.replace(/[<>:\"/\\|?*\x00-\x1F]/g, "_").replace(/[. ]+$/g, "") || "api-key";
+    const detailsTable = document.getElementById("details-table");
+    const tableName = detailsTable.dataset.tableName || "Таблица";
+    const safeFileName = sanitizeFileName(`${tableName} ${getSelectedKeyName()}`);
     const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -160,12 +184,12 @@ document.querySelectorAll(".tab-button").forEach(btn => {
         const type = btn.dataset.type;
 
         const detailsTable = document.getElementById("details-table");
+        detailsTable.dataset.tableName = btn.textContent.trim();
         const thead = detailsTable.querySelector("thead tr");
         const tbody = detailsTable.querySelector("tbody");
 
         tbody.innerHTML = "";
         thead.innerHTML = "";
-        document.getElementById("download-details-btn").disabled = true;
 
         document.querySelectorAll(".tab-button").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
@@ -215,8 +239,6 @@ document.querySelectorAll(".tab-button").forEach(btn => {
                 tbody.appendChild(tr);
             });
 
-            document.getElementById("download-details-btn").disabled = data.length === 0;
-
         } catch (err) {
             alert(err.message);
             console.error(err);
@@ -244,7 +266,7 @@ document.getElementById("download-nomenclature-btn").addEventListener("click", a
 
         const a = document.createElement("a");
         a.href = url;
-        a.download = "nomenclature.txt";
+        a.download = `${sanitizeFileName(`Номенклатура ${getSelectedKeyName()}`)}.txt`;
         document.body.appendChild(a);
         a.click();
         a.remove();

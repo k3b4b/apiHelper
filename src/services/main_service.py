@@ -9,6 +9,7 @@ from typing import List, Dict, Optional, Type
 from src.services.db_service import check_token, create_api_key, read_entities, update_token, upsert_entities
 from src.core.cryptography import decrypt_entity
 from src.core.token_management import get_token as redis_get_token, set_token as redis_set_token
+from src.core.config import APP_ID, CLIENT_SECRET
 
 # нюхаем токен в редисе, если нет - в бд, если просрочен - запрашиваем новый у апи и сохраняем в бд и редис
 def get_token(db: Session, key_id: int) -> str:
@@ -29,8 +30,20 @@ def get_token(db: Session, key_id: int) -> str:
         redis_set_token(key_id, token)
         return token
     logger.info(f"Token expired. Fetching a new one from API...")
+    #temp_api = ApiService()
+    #data = temp_api.fetch_token(decrypt_entity(api_key_obj.api_key))
+###
+    logger.info(f"Token expired. Fetching a new one from API...")
+    if not APP_ID or not CLIENT_SECRET:
+        raise RuntimeError("APP_ID and SECRET must be configured in .env")
+
     temp_api = ApiService()
-    data = temp_api.fetch_token(decrypt_entity(api_key_obj.api_key))
+    data = temp_api.fetch_token(
+        api_key=decrypt_entity(api_key_obj.api_key),
+        app_id=APP_ID,
+        client_secret=CLIENT_SECRET,
+    )
+
     new_token = data["token"]
     masked = new_token[:5] + "..." + new_token[-5:]
     logger.info(f"New token received: {masked}")
