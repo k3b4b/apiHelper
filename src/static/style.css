@@ -359,10 +359,13 @@ form label {
     overflow: hidden;
 }
 
-#select_api_key .select-api-key-bottom {
+#select_api_key {
     position: relative;
-    flex: 0 0 70px;
-    height: 70px;
+}
+
+#select_api_key .select-api-key-bottom {
+    position: static;
+    flex: 0;
 }
 
 #select_api_key .select-api-key-bottom > .top_buttons {
@@ -377,7 +380,7 @@ form label {
 #select_api_key .organizations-hint {
     position: absolute;
     right: 0;
-    bottom: 0;
+    bottom: 3px;
     left: 0;
     margin: 0;
     padding: 0;
