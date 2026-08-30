@@ -82,9 +82,77 @@ document.getElementById("favorite-toggle-btn").addEventListener("click", () => {
     updateFavoriteToggle();
 });
 
+function setKeyEditMode(enabled) {
+    const panel = document.getElementById("select_api_key");
+    const controls = document.getElementById("key-edit-controls");
+    const input = document.getElementById("key-name-input");
+    const keyId = document.getElementById("api-key-select").value;
+
+    panel.classList.toggle("editing-key", enabled);
+    controls.hidden = !enabled;
+    if (enabled && keyId) {
+        input.value = document.getElementById("api-key-select").options[
+            document.getElementById("api-key-select").selectedIndex
+        ]?.textContent.trim() || "";
+        input.focus();
+        input.select();
+    }
+}
+
+document.getElementById("edit-api-key-btn").addEventListener("click", () => {
+    setKeyEditMode(!document.getElementById("select_api_key").classList.contains("editing-key"));
+});
+
+document.getElementById("save-key-name-btn").addEventListener("click", async () => {
+    const keyId = document.getElementById("api-key-select").value;
+    const input = document.getElementById("key-name-input");
+    const description = input.value.trim();
+    if (!keyId || !description) {
+        alert("Введите название ключа");
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/update_api_key/${keyId}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({ description }),
+        });
+        if (!response.ok) throw new Error((await response.json()).detail || "Не удалось сохранить название");
+
+        apiKeySelectControl.updateOption(keyId, { value: keyId, text: description });
+        const favorites = getFavoriteApiKeys().map(item =>
+            item.id === keyId ? { ...item, name: description } : item
+        );
+        saveFavoriteApiKeys(favorites);
+        renderFavoriteApiKeys();
+        setKeyEditMode(false);
+    } catch (err) {
+        console.error(err);
+        alert(err.message);
+    }
+});
+
+document.getElementById("delete-api-key-btn").addEventListener("click", async () => {
+    const keyId = document.getElementById("api-key-select").value;
+    const keyName = getSelectedKeyName();
+    if (!keyId || !confirm(`Удалить API-ключ «${keyName}» полностью?`)) return;
+
+    try {
+        const response = await fetch(`/api/delete_api_key/${keyId}`, { method: "DELETE" });
+        if (!response.ok) throw new Error((await response.json()).detail || "Не удалось удалить API-ключ");
+        window.location.reload();
+    } catch (err) {
+        console.error(err);
+        alert(err.message);
+    }
+});
+
 apiKeySelectControl.on("change", keyId => {
     updateFavoriteToggle();
     renderFavoriteApiKeys();
+    document.getElementById("edit-api-key-btn").disabled = !keyId;
+    setKeyEditMode(false);
     if (keyId) loadOrganizations(keyId);
 });
 

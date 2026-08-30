@@ -9,6 +9,8 @@ from src.core.rate_limit import request_is_limited
 from src.db.database import get_db
 from src.db import models
 from src.services.main_service import download_nomenclature, get_token, pass_organizations, refresh_discount_types, refresh_order_types, refresh_organizations, refresh_payment_types, refresh_terminals, process_new_key, pass_entities
+from src.services.db_service import delete_api_key, update_api_key_description
+from src.core.token_management import delete_token as delete_cached_token
 
 router = APIRouter(prefix="/api")
 
@@ -26,6 +28,24 @@ def add_api_key(api_key: str = Form(...),
         logger.error(f"Error processing new API key: {e}")
         return HTMLResponse(f"<h3>Ошибка: {e}</h3><a href='/'>Назад</a>")
     return RedirectResponse("/", status_code=303)  # после добавления редирект на главную
+
+#------------------------------------------------------------------------------
+@router.post("/update_api_key/{key_id}")
+def update_api_key_route(key_id: int, description: str = Form(...), db: Session = Depends(get_db)):
+    description = description.strip()
+    if not description:
+        raise HTTPException(status_code=400, detail="Название ключа не может быть пустым")
+    updated = update_api_key_description(db, key_id, description)
+    if not updated:
+        raise HTTPException(status_code=404, detail="API-ключ не найден")
+    return {"id": updated.id, "description": updated.description}
+
+@router.delete("/delete_api_key/{key_id}")
+def delete_api_key_route(key_id: int, db: Session = Depends(get_db)):
+    if not delete_api_key(db, key_id):
+        raise HTTPException(status_code=404, detail="API-ключ не найден")
+    delete_cached_token(key_id)
+    return {"status": "ok"}
 
 #------------------------------------------------------------------------------
 # роутеры на вытягивание данных с базы

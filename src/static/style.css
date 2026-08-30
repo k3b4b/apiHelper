@@ -359,6 +359,14 @@ form label {
     overflow: hidden;
 }
 
+#edit-api-key-btn {
+    flex: 0 0 40px;
+    height: 40px;
+    padding: 0;
+    font-size: 21px;
+    line-height: 40px;
+}
+
 #select_api_key {
     position: relative;
 }
@@ -375,6 +383,36 @@ form label {
     margin: 0;
     transform: translateX(-50%);
     white-space: nowrap;
+}
+
+#key-edit-controls {
+    position: absolute;
+    right: 0;
+    bottom: 30px;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+#key-edit-controls[hidden] {
+    display: none;
+}
+
+#key-edit-controls input {
+    width: min(65%, 280px);
+    box-sizing: border-box;
+}
+
+#key-edit-controls button {
+    width: 40px;
+    padding: 0;
+    font-size: 18px;
+}
+
+#select_api_key.editing-key .select-api-key-bottom > .top_buttons,
+#select_api_key.editing-key .organizations-hint {
+    visibility: hidden;
 }
 
 #select_api_key .organizations-hint {

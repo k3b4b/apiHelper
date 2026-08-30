@@ -35,6 +35,7 @@
             disabled>
             ☆
         </button>
+        <button type="button" id="edit-api-key-btn" aria-label="Изменить API-ключ" title="Изменить API-ключ" disabled>✎</button>
     </div>
 
     <div class="select-api-key-bottom">
@@ -47,6 +48,12 @@
 
         <div class="organizations-hint">
             При первом нажатии данные будут сохранены в базу. Повторно нажимать при отсутствии изменений не нужно.
+        </div>
+
+        <div id="key-edit-controls" hidden>
+            <input type="text" id="key-name-input" maxlength="32" placeholder="Название ключа">
+            <button type="button" id="save-key-name-btn" title="Сохранить название" aria-label="Сохранить название">✓</button>
+            <button type="button" id="delete-api-key-btn" title="Удалить API-ключ" aria-label="Удалить API-ключ">🗑</button>
         </div>
 
     </div>

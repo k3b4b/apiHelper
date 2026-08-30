@@ -45,6 +45,44 @@ def create_api_key(db: Session, api_key: str, description: str):
         db.rollback()
         raise
 
+def update_api_key_description(db: Session, key_id: int, description: str):
+    try:
+        api_key_obj = db.query(models.ApiKey).filter(models.ApiKey.id == key_id).first()
+        if not api_key_obj:
+            return None
+        api_key_obj.description = description
+        db.commit()
+        db.refresh(api_key_obj)
+        logger.success(f"Updated description for API key ID {key_id}")
+        return api_key_obj
+    except SQLAlchemyError as e:
+        logger.exception(f"Failed to update description for API key ID {key_id}: {str(e)}")
+        db.rollback()
+        raise
+
+def delete_api_key(db: Session, key_id: int) -> bool:
+    try:
+        api_key_obj = db.query(models.ApiKey).filter(models.ApiKey.id == key_id).first()
+        if not api_key_obj:
+            return False
+
+        organization_ids = [org.id for org in api_key_obj.organizations]
+        if organization_ids:
+            for model in (models.Terminal, models.OrderType, models.PaymentType, models.DiscountType):
+                db.query(model).filter(model.organization_id.in_(organization_ids)).delete(synchronize_session=False)
+            db.query(models.Organization).filter(models.Organization.id.in_(organization_ids)).delete(synchronize_session=False)
+            db.expire(api_key_obj, ["organizations"])
+
+        db.query(models.ApiAccess).filter(models.ApiAccess.api_key_id == key_id).delete(synchronize_session=False)
+        db.delete(api_key_obj)
+        db.commit()
+        logger.success(f"Deleted API key ID {key_id}")
+        return True
+    except SQLAlchemyError as e:
+        logger.exception(f"Failed to delete API key ID {key_id}: {str(e)}")
+        db.rollback()
+        raise
+
 # универальный апсер для любых таблиц
 def upsert_entities(db: Session, model: Type, data_list: List[Dict], get_filter: Callable[[Dict], Dict], update_fields: List[str], field_map: Dict[str, str] = None):
     logger.debug(f"Starting UPSERT for model {model.__name__}. Items: {len(data_list)}")
