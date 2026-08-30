@@ -133,16 +133,43 @@ button:disabled {
     min-height: 0;
     overflow-y: auto;
     padding-right: 4px;
+    scrollbar-color: #464b52 #181a1d;
+    scrollbar-width: thin;
+}
+
+#favorite-api-key-list::-webkit-scrollbar {
+    width: 9px;
+}
+
+#favorite-api-key-list::-webkit-scrollbar-track {
+    background: #181a1d;
+    border-radius: 8px;
+}
+
+#favorite-api-key-list::-webkit-scrollbar-thumb {
+    background: #464b52;
+    border: 2px solid #181a1d;
+    border-radius: 8px;
+}
+
+#favorite-api-key-list::-webkit-scrollbar-thumb:hover {
+    background: #5c626b;
 }
 
 .favorite-api-key-btn {
     width: 100%;
     text-align: left;
+    opacity: 0.65;
+}
+
+.favorite-api-key-btn:hover {
+    opacity: 0.82;
 }
 
 .favorite-api-key-btn.active,
 .favorite-api-key-btn.active:hover {
     background-color: #1e587e;
+    opacity: 1;
 }
 
 .favorites-empty {
@@ -332,9 +359,31 @@ form label {
     overflow: hidden;
 }
 
+#select_api_key .select-api-key-bottom {
+    position: relative;
+    flex: 0 0 70px;
+    height: 70px;
+}
+
+#select_api_key .select-api-key-bottom > .top_buttons {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    margin: 0;
+    transform: translateX(-50%);
+    white-space: nowrap;
+}
+
 #select_api_key .organizations-hint {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
     margin: 0;
     padding: 0;
+    font-size: 9px;
+    line-height: 1.1;
+    text-align: center;
 }
 
 @media (max-width: 1000px) {
