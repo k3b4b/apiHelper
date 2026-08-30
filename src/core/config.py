@@ -7,6 +7,10 @@ load_dotenv()
 APP_NAME = os.getenv("APP_NAME", "api-helper")
 DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 
+# авторизация iiko API
+APP_ID = os.getenv("APP_ID")
+SECRET = os.getenv("SECRET")
+
 # база данных
 DB_URL = os.getenv("DB_URL", "sqlite:///./data/data.db")
 
@@ -28,7 +32,3 @@ REDIS_DECODE = os.getenv("REDIS_DECODE_RESPONSES", "true").lower() == "true"
 SECRET_KEY = os.getenv("SECRET_KEY", "supersecretkey")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))
-
-# iiko
-APP_ID = os.getenv("APP_ID")
-CLIENT_SECRET = os.getenv("CLIENT_SECRET")

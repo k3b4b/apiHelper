@@ -68,7 +68,6 @@ function getDetailsTableText() {
         .slice(1)
         .map(cell => cell.textContent.trim());
     const rows = [headers];
-    if (headers.length) rows.push(headers.join("\t"));
 
     detailsTable.querySelectorAll("tbody tr").forEach(row => {
         const values = Array.from(row.querySelectorAll("td"))
