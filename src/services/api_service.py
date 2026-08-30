@@ -2,7 +2,6 @@ import requests
 from src.core.logger import logger
 
 ENDPOINTS = {
-        "token": "access_token?=",
         "organizations": "organizations",
         "terminals": "terminal_groups",
         "payment_types": "payment_types",
@@ -13,6 +12,7 @@ ENDPOINTS = {
 
 class ApiService:
     BASE_URL = "https://api-ru.iiko.services/api/1/"
+    TOKEN_URL = "https://api-ru.iiko.services/api/v2/access_token"
 
     def __init__(self, token: str = None):
         self.base_url = self.BASE_URL
@@ -54,9 +54,22 @@ class ApiService:
     
 
     # методы для каждого из эндпоинтов
-    def fetch_token(self, api_key: str) -> dict:
+    def fetch_token(self, api_key: str, app_id: str, client_secret: str) -> dict:
         logger.info("Fetching access token…")
-        return self._post(ENDPOINTS["token"], json={"apiLogin": api_key})
+        payload = {
+            "apiKey": api_key,
+            "appId": app_id,
+            "clientSecret": client_secret,
+        }
+
+        try:
+            response = self.session.post(self.TOKEN_URL, json=payload)
+            logger.debug(f"Response Status Code: {response.status_code}")
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.exception(f"Token request to {self.TOKEN_URL} failed: {e}")
+            raise
     
     def fetch_nomenclature(self, organization_id: str):
         logger.info(f"Fetching nomenclature for org: {organization_id}")
