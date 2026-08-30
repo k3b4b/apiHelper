@@ -159,7 +159,7 @@ button:disabled {
 .favorite-api-key-btn {
     width: 100%;
     text-align: left;
-    opacity: 0.65;
+    opacity: 1;
 }
 
 .favorite-api-key-btn:hover {
