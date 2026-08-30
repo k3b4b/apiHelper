@@ -338,3 +338,26 @@ form label {
     background-color: #888 !important;
     opacity: 0.6;
 }
+
+#details-table caption {
+    text-align: left;
+    margin-bottom: 8px;
+}
+
+#download-details-btn {
+    padding: 8px 12px;
+}
+
+#details-table .copy-column {
+    box-sizing: border-box;
+    width: 52px;
+    padding: 6px;
+    text-align: center;
+}
+
+.copy-row-btn {
+    min-width: 34px;
+    padding: 6px 8px;
+    font-size: 18px;
+    line-height: 1;
+}

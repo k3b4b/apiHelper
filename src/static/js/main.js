@@ -60,7 +60,81 @@ function selectOrganization(button) {
 
     detailsTable.querySelector("thead tr").innerHTML = "";
     detailsTable.querySelector("tbody").innerHTML = "";
+    document.getElementById("download-details-btn").disabled = true;
 }
+
+function getDetailsTableText() {
+    const detailsTable = document.getElementById("details-table");
+    const rows = [];
+
+    const headers = Array.from(detailsTable.querySelectorAll("thead th"))
+        .slice(1)
+        .map(cell => cell.textContent.trim());
+    if (headers.length) rows.push(headers.join("\t"));
+
+    detailsTable.querySelectorAll("tbody tr").forEach(row => {
+        const values = Array.from(row.querySelectorAll("td"))
+            .slice(1)
+            .map(cell => cell.textContent.trim());
+        rows.push(values.join("\t"));
+    });
+
+    return rows.join("\n");
+}
+
+async function copyDetailsRow(button) {
+    const cells = Array.from(button.closest("tr").querySelectorAll("td")).slice(1);
+    const text = cells.map(cell => cell.textContent.trim()).join("\t");
+
+    try {
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+        } else {
+            const textarea = document.createElement("textarea");
+            textarea.value = text;
+            textarea.style.position = "fixed";
+            textarea.style.opacity = "0";
+            document.body.appendChild(textarea);
+            textarea.select();
+            const copied = document.execCommand("copy");
+            textarea.remove();
+            if (!copied) throw new Error("Copy command was rejected");
+        }
+        const originalText = button.textContent;
+        button.textContent = "✓";
+        button.title = "Строка скопирована";
+        setTimeout(() => {
+            button.textContent = originalText;
+            button.title = "Копировать строку";
+        }, 1200);
+    } catch (err) {
+        console.error(err);
+        alert("Не удалось скопировать строку");
+    }
+}
+
+document.getElementById("download-details-btn").addEventListener("click", () => {
+    const text = getDetailsTableText();
+    if (!text) {
+        alert("Таблица пуста");
+        return;
+    }
+
+    const keySelect = document.getElementById("api-key-select");
+    const selectedOption = keySelect.options[keySelect.selectedIndex];
+    const keyName = selectedOption?.textContent.trim() || "api-key";
+    const safeFileName = keyName.replace(/[<>:\"/\\|?*\x00-\x1F]/g, "_").replace(/[. ]+$/g, "") || "api-key";
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = `${safeFileName}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+});
 
 // ---- Кнопка "Обновить всё" ----
 document.getElementById("refresh-all-btn").addEventListener("click", () => {
@@ -91,6 +165,7 @@ document.querySelectorAll(".tab-button").forEach(btn => {
 
         tbody.innerHTML = "";
         thead.innerHTML = "";
+        document.getElementById("download-details-btn").disabled = true;
 
         document.querySelectorAll(".tab-button").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
@@ -101,16 +176,16 @@ document.querySelectorAll(".tab-button").forEach(btn => {
 
             if (type === "terminals") {
                 response = await fetch(`/api/get_terminals/${orgId}`, { method: "POST" });
-                thead.innerHTML = "<th>ID</th><th>Название</th>";
+                thead.innerHTML = '<th class="copy-column" aria-label="Копирование"></th><th>ID</th><th>Название</th>';
             } else if (type === "payment_types") {
                 response = await fetch(`/api/get_payment_types/${orgId}`, { method: "POST" });
-                thead.innerHTML = "<th>ID</th><th>Название</th><th>Вид</th><th>Код</th>";
+                thead.innerHTML = '<th class="copy-column" aria-label="Копирование"></th><th>ID</th><th>Название</th><th>Вид</th><th>Код</th>';
             } else if (type === "order_types") {
                 response = await fetch(`/api/get_order_types/${orgId}`, { method: "POST" });
-                thead.innerHTML = "<th>ID</th><th>Название</th><th>Тип</th>";
+                thead.innerHTML = '<th class="copy-column" aria-label="Копирование"></th><th>ID</th><th>Название</th><th>Тип</th>';
             } else if (type === "discounts") {
                 response = await fetch(`/api/get_discount_types/${orgId}`, { method: "POST" });
-                thead.innerHTML = "<th>ID</th><th>Название</th>";
+                thead.innerHTML = '<th class="copy-column" aria-label="Копирование"></th><th>ID</th><th>Название</th>';
             }
 
             if (!response.ok) throw new Error("Ошибка загрузки данных");
@@ -119,9 +194,28 @@ document.querySelectorAll(".tab-button").forEach(btn => {
 
             data.forEach(item => {
                 const tr = document.createElement("tr");
-                tr.innerHTML = Object.values(item).map(v => `<td>${v}</td>`).join("");
+                const copyCell = document.createElement("td");
+                const copyButton = document.createElement("button");
+
+                copyCell.className = "copy-column";
+                copyButton.type = "button";
+                copyButton.className = "copy-row-btn";
+                copyButton.textContent = "⧉";
+                copyButton.title = "Копировать строку";
+                copyButton.setAttribute("aria-label", "Копировать строку");
+                copyButton.addEventListener("click", () => copyDetailsRow(copyButton));
+                copyCell.appendChild(copyButton);
+                tr.appendChild(copyCell);
+
+                Object.values(item).forEach(value => {
+                    const cell = document.createElement("td");
+                    cell.textContent = value ?? "";
+                    tr.appendChild(cell);
+                });
                 tbody.appendChild(tr);
             });
+
+            document.getElementById("download-details-btn").disabled = data.length === 0;
 
         } catch (err) {
             alert(err.message);
